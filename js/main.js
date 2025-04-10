@@ -1,5 +1,6 @@
 import { initTheme } from "./theme.js";
 import { initAuth } from "./auth.js";
+import { initNavbar } from "./navbar.js";
 
 // Обработчик кнопки входа/регистрации
 document.getElementById("authButton").addEventListener("click", function () {
@@ -13,4 +14,6 @@ document.getElementById("authButton").addEventListener("click", function () {
 
 document.addEventListener("DOMContentLoaded", function () {
   initTheme();
+  initAuth();
+  initNavbar();
 });

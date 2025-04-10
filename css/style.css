@@ -11,14 +11,17 @@
   --primary-bg-light: #b8ffaa;
   --primary-text-light: #0a2008;
   --primary-grad-light: linear-gradient(
-    rgba(84, 180, 75, 0),
-    rgba(63, 163, 54, 0.659)
+    rgba(110, 255, 97, 0),
+    rgba(135, 255, 124, 0.603)
   );
 
   /* Дополнительные константы */
   --border-radius: 0.5rem;
   --transition-speed: 0.3s;
-  --main-bg-image: url("../img/background_main.webp");
+  --main-bg-image: url("../img/main_bg.webp");
+  --services-bg-image: url("../img/services_bg.webp");
+  --contacts-bg-image: url("../img/contacts_bg.webp");
+  --about-bg-image: url("../img/about_bg.webp");
 }
 
 body {
@@ -43,8 +46,27 @@ body {
 }
 
 .main-with-bg {
-  background: var(--main-bg-gradient),
-    var(--main-bg-image) center/cover no-repeat;
+  background: var(--bg-gradient), var(--main-bg-image) center/cover no-repeat;
+  color: var(--bs-body-color);
+  position: relative;
+}
+
+.services-with-bg {
+  background: var(--bg-gradient),
+    var(--services-bg-image) center/cover no-repeat;
+  color: var(--bs-body-color);
+  position: relative;
+}
+
+.contacts-with-bg {
+  background: var(--bg-gradient),
+    var(--contacts-bg-image) center/cover no-repeat;
+  color: var(--bs-body-color);
+  position: relative;
+}
+
+.about-with-bg {
+  background: var(--bg-gradient), var(--about-bg-image) center/cover no-repeat;
   color: var(--bs-body-color);
   position: relative;
 }
@@ -53,11 +75,11 @@ body {
 [data-bs-theme="dark"] {
   --bs-body-bg: var(--primary-bg-dark);
   --bs-body-color: var(--primary-text-dark);
-  --main-bg-gradient: var(--primary-grad-dark);
+  --bg-gradient: var(--primary-grad-dark);
 }
 
 [data-bs-theme="light"] {
   --bs-body-bg: var(--primary-bg-light);
   --bs-body-color: var(--primary-text-light);
-  --main-bg-gradient: var(--primary-grad-light);
+  --bg-gradient: var(--primary-grad-light);
 }

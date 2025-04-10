@@ -1,0 +1,30 @@
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.footer {
+  margin-top: auto;
+}
+
+/* Кастомные стили для навбара */
+.navbar {
+  border-bottom: 1px solid #444;
+}
+
+/* Стили для основного контента */
+.main-content {
+  padding: 2rem 0;
+}
+
+[data-bs-theme="dark"] {
+  --bs-body-bg: #1a1a1a;
+  --bs-body-color: #f8f9fa;
+}
+
+[data-bs-theme="light"] {
+  --bs-body-bg: #f8f9fa;
+  --bs-body-color: #212529;
+}

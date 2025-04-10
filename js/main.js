@@ -1,4 +1,5 @@
 import { initTheme } from "./theme.js";
+import { initAuth } from "./auth.js";
 
 // Обработчик кнопки входа/регистрации
 document.getElementById("authButton").addEventListener("click", function () {

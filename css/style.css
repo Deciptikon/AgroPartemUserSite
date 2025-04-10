@@ -1,3 +1,26 @@
+:root {
+  /* Тёмная тема*/
+  --primary-bg-dark: #0a2008;
+  --primary-text-dark: #b8ffaa;
+  --primary-grad-dark: linear-gradient(
+    rgba(10, 32, 8, 0.2),
+    rgba(10, 32, 8, 0.9)
+  );
+
+  /* Светлая тема*/
+  --primary-bg-light: #b8ffaa;
+  --primary-text-light: #0a2008;
+  --primary-grad-light: linear-gradient(
+    rgba(84, 180, 75, 0),
+    rgba(63, 163, 54, 0.659)
+  );
+
+  /* Дополнительные константы */
+  --border-radius: 0.5rem;
+  --transition-speed: 0.3s;
+  --main-bg-image: url("../img/background_main.webp");
+}
+
 body {
   min-height: 100vh;
   display: flex;
@@ -19,12 +42,22 @@ body {
   padding: 2rem 0;
 }
 
+.main-with-bg {
+  background: var(--main-bg-gradient),
+    var(--main-bg-image) center/cover no-repeat;
+  color: var(--bs-body-color);
+  position: relative;
+}
+
+/*Кастомные темы*/
 [data-bs-theme="dark"] {
-  --bs-body-bg: #1a1a1a;
-  --bs-body-color: #f8f9fa;
+  --bs-body-bg: var(--primary-bg-dark);
+  --bs-body-color: var(--primary-text-dark);
+  --main-bg-gradient: var(--primary-grad-dark);
 }
 
 [data-bs-theme="light"] {
-  --bs-body-bg: #f8f9fa;
-  --bs-body-color: #212529;
+  --bs-body-bg: var(--primary-bg-light);
+  --bs-body-color: var(--primary-text-light);
+  --main-bg-gradient: var(--primary-grad-light);
 }

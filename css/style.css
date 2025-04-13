@@ -1,21 +1,20 @@
 :root {
   /* Тёмная тема*/
-  --primary-bg-dark: #0a2008;
-  --primary-text-dark: #b8ffaa;
-  --primary-grad-dark: linear-gradient(
-    rgba(10, 32, 8, 0.2),
-    rgba(10, 32, 8, 0.9)
-  );
+  --primary-bg-dark: #212037;
+  --primary-text-dark: #ffeddd;
+  --primary-grad-dark: linear-gradient(rgba(10, 32, 8, 0), rgba(10, 32, 8, 0));
   --primary-bg-account-menu-dark: #212037;
+  --primary-bg-account-tabs-dark: #21203774;
 
   /* Светлая тема*/
-  --primary-bg-light: #b8ffaa;
-  --primary-text-light: #0a2008;
+  --primary-bg-light: ##ffeddd;
+  --primary-text-light: #212037;
   --primary-grad-light: linear-gradient(
     rgba(110, 255, 97, 0),
-    rgba(135, 255, 124, 0.711)
+    rgba(135, 255, 124, 0)
   );
   --primary-bg-account-menu-light: #d6d7ff;
+  --primary-bg-account-tabs-light: #d6d7ff6c;
 
   /* Дополнительные константы */
   --border-radius: 0.5rem;
@@ -101,12 +100,17 @@ body {
   background-color: var(--bg-account-menu-color);
 }
 
+.bg-opacity-item {
+  background-color: var(--bg-account-tabs-color);
+}
+
 /*Кастомные темы*/
 [data-bs-theme="dark"] {
   --bs-body-bg: var(--primary-bg-dark);
   --bs-body-color: var(--primary-text-dark);
   --bg-gradient: var(--primary-grad-dark);
   --bg-account-menu-color: var(--primary-bg-account-menu-dark);
+  --bg-account-tabs-color: var(--primary-bg-account-tabs-dark);
 }
 
 [data-bs-theme="light"] {
@@ -114,4 +118,5 @@ body {
   --bs-body-color: var(--primary-text-light);
   --bg-gradient: var(--primary-grad-light);
   --bg-account-menu-color: var(--primary-bg-account-menu-light);
+  --bg-account-tabs-color: var(--primary-bg-account-tabs-light);
 }

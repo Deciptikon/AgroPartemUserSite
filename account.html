@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Мой аккаунт | AgroPartem</title>
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <!-- Навбар (аналогичный главной) -->
+    <nav class="navbar navbar-expand-lg">
+      <div class="container">
+        <a class="navbar-brand" href="index.html">AgroPartem</a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav me-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="index.html">Главная</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="about.html">О нас</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="services.html">Услуги</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="contacts.html">Контакты</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active" href="account.html">Аккаунт</a>
+            </li>
+          </ul>
+          <div class="d-flex">
+            <button id="themeToggle" class="btn btn-outline-secondary me-2">
+              <i id="themeIcon" class="bi bi-sun"></i>
+            </button>
+            <button id="logoutButton" class="btn btn-outline">Выход</button>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Основное содержимое -->
+    <main class="container my-5">
+      <div class="p-5 mb-4 rounded-3 border border-secondary account-with-bg">
+        <div class="container-fluid py-5">
+          <div class="row">
+            <!-- Левая колонка - меню (20% ширины) -->
+            <div class="col-md-4 col-lg-3">
+              <div
+                class="d-flex flex-column flex-shrink-0 p-3 rounded bg-account-menu"
+              >
+                <ul class="nav nav-pills flex-column mb-auto">
+                  <li class="nav-item">
+                    <button
+                      class="nav-link active tab-button"
+                      data-tab="profile"
+                    >
+                      <i class="bi bi-person me-2"></i>Профиль
+                    </button>
+                  </li>
+                  <li class="nav-item">
+                    <button class="nav-link tab-button" data-tab="settings">
+                      <i class="bi bi-gear me-2"></i>Настройки
+                    </button>
+                  </li>
+                  <li class="nav-item">
+                    <button class="nav-link tab-button" data-tab="devices">
+                      <i class="bi bi-cpu me-2"></i>Устройства
+                    </button>
+                  </li>
+                  <li class="nav-item">
+                    <button class="nav-link tab-button" data-tab="gps">
+                      <i class="bi bi-geo-alt me-2"></i>Отслеживание
+                    </button>
+                  </li>
+                  <li class="nav-item">
+                    <button class="nav-link tab-button" data-tab="security">
+                      <i class="bi bi-shield-lock me-2"></i>Статистика
+                    </button>
+                  </li>
+                  <li class="nav-item">
+                    <button class="nav-link tab-button" data-tab="help">
+                      <i class="bi bi-question-circle me-2"></i>Помощь
+                    </button>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- Правая колонка - контент (80% ширины) -->
+            <div class="col-md-8 col-lg-9">
+              <!-- Контент вкладок -->
+              <div id="profile" class="tab-content active">
+                <h2>Мой профиль</h2>
+                <p>Здесь будет информация о профиле...</p>
+                <!-- Бла Бла Бла -->
+              </div>
+
+              <div id="settings" class="tab-content">
+                <h2>Настройки аккаунта</h2>
+                <p>Здесь будут настройки аккаунта...</p>
+                <!-- Бла Бла Бла -->
+              </div>
+
+              <div id="devices" class="tab-content">
+                <h2>Список устройств</h2>
+                <p>Здесь будет список устройств...</p>
+                <!-- Бла Бла Бла -->
+              </div>
+
+              <div id="gps" class="tab-content">
+                <h2>Отслеживание устройств</h2>
+                <p>Здесь будет карта с треками...</p>
+                <!-- Бла Бла Бла -->
+              </div>
+
+              <div id="security" class="tab-content">
+                <h2>Статистика</h2>
+                <p>Здесь будет статистика по аккаунту...</p>
+                <!-- Бла Бла Бла -->
+              </div>
+
+              <div id="help" class="tab-content">
+                <h2>Помощь</h2>
+                <p>Здесь будет FAQ и форма обращения в поддержку...</p>
+                <!-- Бла Бла Бла -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Подвал -->
+    <footer class="footer mt-auto py-3 border-top border-secondary">
+      <div class="container">
+        <span>© 2025 AgroPartem</span>
+      </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="module" src="js/account.js"></script>
+  </body>
+</html>

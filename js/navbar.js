@@ -20,15 +20,17 @@ function setActiveNavItem() {
 
   navItems.forEach((item) => {
     const itemHref = item.getAttribute("href");
-    const itemPath = itemHref.split("/").pop();
+    if (itemHref) {
+      const itemPath = itemHref.split("/").pop();
 
-    // Сравниваем без учета регистра и параметров
-    if (currentPath.toLowerCase() === itemPath.toLowerCase()) {
-      item.classList.add("active");
-      item.setAttribute("aria-current", "page");
-    } else {
-      item.classList.remove("active");
-      item.removeAttribute("aria-current");
+      // Сравниваем без учета регистра и параметров
+      if (currentPath.toLowerCase() === itemPath.toLowerCase()) {
+        item.classList.add("active");
+        item.setAttribute("aria-current", "page");
+      } else {
+        item.classList.remove("active");
+        item.removeAttribute("aria-current");
+      }
     }
   });
 }

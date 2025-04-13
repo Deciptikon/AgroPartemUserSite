@@ -6,14 +6,16 @@
     rgba(10, 32, 8, 0.2),
     rgba(10, 32, 8, 0.9)
   );
+  --primary-bg-account-menu-dark: #212037;
 
   /* Светлая тема*/
   --primary-bg-light: #b8ffaa;
   --primary-text-light: #0a2008;
   --primary-grad-light: linear-gradient(
     rgba(110, 255, 97, 0),
-    rgba(135, 255, 124, 0.603)
+    rgba(135, 255, 124, 0.711)
   );
+  --primary-bg-account-menu-light: #d6d7ff;
 
   /* Дополнительные константы */
   --border-radius: 0.5rem;
@@ -22,6 +24,7 @@
   --services-bg-image: url("../img/services_bg.webp");
   --contacts-bg-image: url("../img/contacts_bg.webp");
   --about-bg-image: url("../img/about_bg.webp");
+  --account-bg-image: url("../img/account_bg.webp");
 }
 
 body {
@@ -71,15 +74,44 @@ body {
   position: relative;
 }
 
+.account-with-bg {
+  background: var(--bg-gradient), var(--account-bg-image) center/cover no-repeat;
+  color: var(--bs-body-color);
+  position: relative;
+}
+
+.tab-content {
+  display: none;
+}
+.tab-content.active {
+  display: block;
+}
+.nav-pills .nav-link.active {
+  background-color: #0d6efd;
+}
+.tab-button {
+  text-align: left;
+  width: 100%;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+.bg-account-menu {
+  background-color: var(--bg-account-menu-color);
+}
+
 /*Кастомные темы*/
 [data-bs-theme="dark"] {
   --bs-body-bg: var(--primary-bg-dark);
   --bs-body-color: var(--primary-text-dark);
   --bg-gradient: var(--primary-grad-dark);
+  --bg-account-menu-color: var(--primary-bg-account-menu-dark);
 }
 
 [data-bs-theme="light"] {
   --bs-body-bg: var(--primary-bg-light);
   --bs-body-color: var(--primary-text-light);
   --bg-gradient: var(--primary-grad-light);
+  --bg-account-menu-color: var(--primary-bg-account-menu-light);
 }

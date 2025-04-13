@@ -102,6 +102,93 @@
       </div>
     </main>
 
+    <!-- Модальное окно регистрации/входа -->
+    <div
+      class="modal fade"
+      id="authModal"
+      tabindex="-1"
+      aria-modal="true"
+      role="dialog"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Вход / Регистрация</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <form id="authForm">
+              <div class="mb-3">
+                <label class="form-label">Имя пользователя</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="username"
+                  required
+                />
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Пароль</label>
+                <div class="input-group">
+                  <input
+                    type="password"
+                    class="form-control"
+                    id="password"
+                    required
+                  />
+                  <button
+                    class="btn btn-outline-secondary"
+                    type="button"
+                    id="togglePassword"
+                  >
+                    <i class="bi bi-eye-slash"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary">
+                  Продолжить
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Модальное окно для аккаунта -->
+    <div class="modal fade" id="accountModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 id="accountName" class="modal-title">Мой аккаунт</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="d-grid gap-2">
+              <button id="accountButton" class="btn btn-outline-primary">
+                Личный кабинет
+              </button>
+              <button id="optionsButton" class="btn btn-outline-secondary">
+                Настройки
+              </button>
+              <button id="logoutButton" class="btn btn-outline-danger">
+                Выход
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Подвал -->
     <footer class="footer mt-auto py-3 border-top border-secondary">
       <div class="container">

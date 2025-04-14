@@ -119,9 +119,9 @@
                 <!-- Бла Бла Бла -->
               </div>
 
-              <div id="devices" class="tab-content">
+              <div id="devices" class="tab-content py-3">
                 <h2>Список устройств</h2>
-                <p>Здесь будет список устройств...</p>
+                <p>Загружаем список устройств...</p>
                 <!-- Бла Бла Бла -->
               </div>
 
@@ -154,6 +154,29 @@
         <span>© 2025 AgroPartem</span>
       </div>
     </footer>
+
+    <!------------------------- Шаблоны --------------------------->
+
+    <!-- Шаблон списка устройств -->
+    <template id="devicesTemplate">
+      <h2><i class="bi bi-devices"></i> Список устройств</h2>
+      <div class="devices-list mt-3">
+        <!-- Сюда будет вставляться список -->
+      </div>
+    </template>
+
+    <!-- Шаблон конкретного устройства -->
+    <template id="deviceItemTemplate">
+      <div class="device-item p-3 border-bottom">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h5 class="mb-1 device-name"></h5>
+            <small class="text-muted device-serial"></small>
+          </div>
+          <i class="bi bi-chevron-right"></i>
+        </div>
+      </div>
+    </template>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script type="module" src="js/account.js"></script>

@@ -54,7 +54,7 @@ function initMobileMenu() {
  */
 function smoothScroll(e) {
   const targetId = this.getAttribute("href");
-  if (targetId.startsWith("#")) {
+  if (targetId !== null && targetId.startsWith("#")) {
     e.preventDefault();
     document.querySelector(targetId)?.scrollIntoView({
       behavior: "smooth",

@@ -1,20 +1,20 @@
 :root {
   /* Тёмная тема*/
   --primary-bg-dark: #212037;
-  --primary-text-dark: #ffeddd;
+  --primary-text-dark: #dde4ff;
   --primary-grad-dark: linear-gradient(rgba(10, 32, 8, 0), rgba(10, 32, 8, 0));
   --primary-bg-account-menu-dark: #212037;
-  --primary-bg-account-tabs-dark: #21203774;
+  --primary-bg-account-tabs-dark: #212037d0;
 
   /* Светлая тема*/
-  --primary-bg-light: ##ffeddd;
+  --primary-bg-light: #dde4ff;
   --primary-text-light: #212037;
   --primary-grad-light: linear-gradient(
     rgba(110, 255, 97, 0),
     rgba(135, 255, 124, 0)
   );
   --primary-bg-account-menu-light: #d6d7ff;
-  --primary-bg-account-tabs-light: #d6d7ff6c;
+  --primary-bg-account-tabs-light: #d6d7ff99;
 
   /* Дополнительные константы */
   --border-radius: 0.5rem;
@@ -79,6 +79,7 @@ body {
   position: relative;
 }
 
+/*Стили табуляции*/
 .tab-content {
   display: none;
 }
@@ -102,6 +103,19 @@ body {
 
 .bg-opacity-item {
   background-color: var(--bg-account-tabs-color);
+}
+
+/*=================Карточки устройств=================*/
+
+.device-item {
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.device-item:hover {
+  background: var(--bg-account-tabs-color);
+}
+.device-item:active {
+  background: var(--bs-body-bg);
 }
 
 /*Кастомные темы*/

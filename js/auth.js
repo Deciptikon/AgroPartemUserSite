@@ -1,6 +1,6 @@
-import { generateSignature } from "./crypto-utils.js";
+import { sendDataToServer } from "./transaction.js";
 import { AUTH_URL, LOCAL_USER_DATA, MAX_TIME_FOR_TOKEN } from "./constants.js";
-import { dateToStr, diffStrDates } from "./utils.js";
+import { dateToStr, diffStrDates, getUserData } from "./utils.js";
 
 export function initAuth() {
   const authModal = new bootstrap.Modal("#authModal");
@@ -100,22 +100,6 @@ export function initAuth() {
   });
 }
 
-export async function sendDataToServer(url, data, signed = null) {
-  const baseUrl = new URL(url);
-  for (let key in data) {
-    baseUrl.searchParams.append(key, data[key]);
-  }
-  if (signed) {
-    const signature = await generateSignature(baseUrl.toString());
-    baseUrl.searchParams.append("sig", signature);
-  }
-  const finalUrl = baseUrl.toString();
-  console.log(finalUrl);
-  const response = await fetch(finalUrl);
-  //console.log(response);
-  return response.json();
-}
-
 export function userDataIsActual() {
   const userData = getUserData(LOCAL_USER_DATA);
   const now = dateToStr(new Date());
@@ -129,17 +113,4 @@ export function userDataIsActual() {
   }
 
   return false;
-}
-
-export function getUserData(key) {
-  const userDataString = localStorage.getItem(key);
-
-  if (!userDataString) return null;
-
-  try {
-    return JSON.parse(userDataString);
-  } catch (e) {
-    console.error("Невалидные данные пользователя", e);
-    return null;
-  }
 }

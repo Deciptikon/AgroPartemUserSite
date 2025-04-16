@@ -1,11 +1,12 @@
 import { initTheme } from "./theme.js";
 import { initNavbar } from "./navbar.js";
 import { userDataIsActual } from "./auth.js";
+import { getListDevices } from "./transaction.js";
 
 // Глобальные переменные
 let currentDeviceId = null;
 let deviceModal = null;
-let mapModal = null;
+
 let tracksData = []; // Здесь будут храниться треки устройства
 let mapInitialized = false;
 let map; // Глобальная переменная для хранения карты
@@ -89,11 +90,7 @@ async function initTabDevices() {
     //const devicesData = [];
     //throw new Error("Сервер не отвечает!");
     /**/
-    const devicesData = [
-      { id: 1, name: "GPS-автопилот 1", serial: "12345-ABCDE-65913" },
-      { id: 2, name: "Дачник X200", serial: "SXF99-5FGH1-YCSFG" },
-      { id: 3, name: "Тестовый", serial: "5G3T8-HFC95-X9542" },
-    ];
+    const devicesData = await getListDevices();
 
     // Если данные пусты
     if (!devicesData || devicesData.length === 0) {

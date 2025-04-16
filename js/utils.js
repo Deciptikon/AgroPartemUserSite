@@ -1,3 +1,16 @@
+export function getUserData(key) {
+  const userDataString = localStorage.getItem(key);
+
+  if (!userDataString) return null;
+
+  try {
+    return JSON.parse(userDataString);
+  } catch (e) {
+    console.error("Невалидные данные пользователя", e);
+    return null;
+  }
+}
+
 export function dateToStr(date) {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0"); // месяцы 0-11

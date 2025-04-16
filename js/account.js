@@ -2,6 +2,15 @@ import { initTheme } from "./theme.js";
 import { initNavbar } from "./navbar.js";
 import { userDataIsActual } from "./auth.js";
 
+// Глобальные переменные
+let currentDeviceId = null;
+let deviceModal = null;
+let mapModal = null;
+let tracksData = []; // Здесь будут храниться треки устройства
+let mapInitialized = false;
+let map; // Глобальная переменная для хранения карты
+let markers = []; // Массив для маркеров
+
 document.addEventListener("DOMContentLoaded", () => {
   if (!userDataIsActual()) {
     setTimeout(() => {
@@ -10,6 +19,18 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   initTheme();
   initNavbar();
+
+  // Вставляем модальные окна в DOM
+
+  // Модальное окно редактирования устройств
+  const deviceModalTemplate = document.getElementById("deviceModalTemplate");
+  document.body.appendChild(deviceModalTemplate.content.cloneNode(true));
+  deviceModal = new bootstrap.Modal("#deviceModal");
+
+  // Модальное окно просмотра треков
+  //const mapModalTemplate = document.getElementById("mapModalTemplate");
+  //document.body.appendChild(mapModalTemplate.content.cloneNode(true));
+  //mapModal =
 
   const logoutButton = document.getElementById("logoutButton");
   logoutButton.addEventListener("click", () => {
@@ -39,8 +60,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Показываем соответствующую вкладку
       const tabId = button.getAttribute("data-tab");
-      if (tabId === "devices") initTabDevices();
       document.getElementById(tabId).classList.add("active");
+
+      if (tabId === "devices") initTabDevices();
+      if (tabId === "gps") initMap();
     });
   });
 });
@@ -184,10 +207,260 @@ function renderErrorState(error) {
   devicesTab.appendChild(errorContainer);
 }
 
+/*
 function openDeviceModal(deviceId) {
-  console.log("Открыть модалку устройства", deviceId);
+  currentDeviceId = deviceId;
+  modal.show(); /////////////////////////////////
+  // Загрузка данных устройства
+  fetch(`/api/devices/${deviceId}`)
+    .then((response) => response.json())
+    .then((device) => {
+      // Заполняем форму
+      document.getElementById("deviceNameInput").value = device.name;
+      document.getElementById("deviceSerialInput").value = device.serial;
+      document.getElementById("deviceLastActiveInput").value =
+        device.lastActive || "Неизвестно";
+
+      // Загружаем треки
+      loadDeviceTracks(deviceId);
+
+      // Настройка кнопки удаления
+      document.getElementById("deleteDeviceBtn").onclick = () => {
+        if (confirm("Вы уверены, что хотите удалить это устройство?")) {
+          deleteDevice(deviceId);
+        }
+      };
+
+      // Показываем модальное окно
+      modal.show();
+    })
+    .catch((error) => {
+      console.error("Ошибка загрузки устройства:", error);
+      alert("Не удалось загрузить данные устройства");
+    });
+}*/
+
+function openDeviceModal(deviceId) {
+  currentDeviceId = deviceId;
+
+  // Mock данные
+  const mockDevice = {
+    id: deviceId,
+    name: `Устройство ${deviceId}`,
+    serial: `SN-${Math.random().toString(36).substring(2, 10).toUpperCase()}`,
+    lastActive: new Date().toLocaleString(),
+  };
+
+  document.getElementById("deviceNameInput").value = mockDevice.name;
+  document.getElementById("deviceSerialInput").value = mockDevice.serial;
+  document.getElementById("deviceLastActiveInput").value =
+    mockDevice.lastActive;
+
+  // Mock треки
+  const mockTracks = Array(5)
+    .fill()
+    .map((_, i) => ({
+      lat: (55.7558 + Math.random() * 10.1).toFixed(4),
+      lng: (37.6173 + Math.random() * 10.1).toFixed(4),
+      timestamp: new Date(Date.now() - i * 3600000),
+    }));
+
+  const tracksList = document.getElementById("deviceTracksList");
+  tracksList.innerHTML = "";
+  const template = document.getElementById("trackItemTemplate");
+
+  mockTracks.forEach((track) => {
+    const item = template.content.cloneNode(true);
+    const trackElement = item.querySelector("a"); // Получаем ссылку из шаблона
+
+    // Заполняем данные
+    item.querySelector(".track-date").textContent =
+      track.timestamp.toLocaleString();
+    item.querySelector(
+      ".track-coords"
+    ).textContent = `${track.lat}° N, ${track.lng}° E`;
+
+    // Обработчик клика на весь элемент трека
+    trackElement.addEventListener("click", (e) => {
+      e.preventDefault(); // Отменяем стандартное поведение ссылки
+      handleTrackClick(track);
+    });
+
+    tracksList.appendChild(item);
+  });
+
+  deviceModal.show();
 }
+
+function handleTrackClick(track) {
+  const deviceModal = bootstrap.Modal.getInstance(
+    document.getElementById("deviceModal")
+  );
+  //if (deviceModal) deviceModal.hide();
+
+  setTimeout(initMapWithTrack(track), 300);
+}
+
+function switchToGpsTab() {
+  // Убираем активный класс у всех кнопок вкладок
+  const tabButtons = document.querySelectorAll(".tab-button");
+  tabButtons.forEach((button) => {
+    button.classList.remove("active");
+  });
+
+  // Убираем активный класс у всех контентов вкладок
+  const tabContents = document.querySelectorAll(".tab-content");
+  tabContents.forEach((content) => {
+    content.classList.remove("active");
+  });
+
+  // Добавляем активный класс к нужной кнопке и контенту
+  const gpsButton = document.querySelector('.tab-button[data-tab="gps"]');
+  const gpsContent = document.getElementById("gps");
+
+  if (gpsButton && gpsContent) {
+    gpsButton.classList.add("active");
+    gpsContent.classList.add("active");
+  }
+}
+
+function initMapWithTrack(track) {
+  switchToGpsTab();
+  initMap(track);
+  deviceModal.hide();
+
+  console.log("Открытие карты с треком:", track);
+
+  /*
+  const mapModal = document.getElementById("mapModal");
+  mapModal.addEventListener("shown.bs.modal", () => {
+    if (!mapInitialized) {
+      const map = L.map("map").setView([track.lat, track.lng], 10);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+      }).addTo(map);
+      mapInitialized = true;
+    }
+  });*/
+
+  //const bsModal = new bootstrap.Modal(mapModal, { backdrop: true });
+  //bsModal.show();
+}
+
+// Загрузка треков устройства
+function loadDeviceTracks(deviceId) {
+  const tracksList = document.getElementById("deviceTracksList");
+  tracksList.innerHTML = "";
+
+  // Загрузка данных
+  fetch(`/api/devices/${deviceId}/tracks`)
+    .then((response) => response.json())
+    .then((tracks) => {
+      tracksData = tracks;
+      const template = document.getElementById("trackItemTemplate");
+
+      tracks.forEach((track) => {
+        const item = template.content.cloneNode(true);
+        item.querySelector(".track-date").textContent = new Date(
+          track.timestamp
+        ).toLocaleString();
+        item.querySelector(
+          ".track-coords"
+        ).textContent = `${track.lat}° N, ${track.lng}° E`;
+        tracksList.appendChild(item);
+      });
+    })
+    .catch((error) => {
+      console.error("Ошибка загрузки треков:", error);
+      tracksList.innerHTML =
+        '<div class="text-muted p-3">Не удалось загрузить треки</div>';
+    });
+}
+
+// Удаление устройства
+function deleteDevice(deviceId) {
+  fetch(`/api/devices/${deviceId}`, { method: "DELETE" })
+    .then(() => {
+      deviceModal.hide();
+      initTabDevices(); // Обновляем список устройств
+      alert("Устройство успешно удалено");
+    })
+    .catch((error) => {
+      console.error("Ошибка удаления:", error);
+      alert("Не удалось удалить устройство");
+    });
+}
+
+// Сохранение изменений
+document.getElementById("deviceForm").addEventListener("submit", (e) => {
+  e.preventDefault();
+
+  const updatedData = {
+    name: document.getElementById("deviceNameInput").value,
+    // Другие редактируемые поля при необходимости
+  };
+
+  fetch(`/api/devices/${currentDeviceId}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(updatedData),
+  })
+    .then(() => {
+      deviceModal.hide();
+      initTabDevices(); // Обновляем список устройств
+    })
+    .catch((error) => {
+      console.error("Ошибка сохранения:", error);
+      alert("Не удалось сохранить изменения");
+    });
+});
 
 function openAddDeviceModal() {
   console.log("Открыть модалку добавления");
+}
+
+// Функция инициализации карты
+function initMap(track = null) {
+  // Проверяем, существует ли уже карта
+  if (map) {
+    map.remove();
+  }
+
+  let point = [55.751244, 37.618423];
+  if (track) point = [track.lat, track.lng];
+
+  // Создаем карту с центром в Москве
+  map = L.map("trackingMap").setView(point, 13);
+
+  // Добавляем слой OpenStreetMap
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: "© OpenStreetMap contributors",
+  }).addTo(map);
+
+  // Добавляем кнопки управления
+  addMapControls(track);
+}
+
+// Добавляем элементы управления
+function addMapControls(track = null) {
+  let point = [55.751244, 37.618423];
+  if (track) point = [track.lat, track.lng];
+
+  // Кнопка центрирования
+  document.getElementById("centerMapBtn").addEventListener("click", () => {
+    map.setView(point, 13);
+  });
+
+  // Кнопка добавления маркера
+  document.getElementById("addMarkerBtn").addEventListener("click", () => {
+    const center = map.getCenter();
+    const marker = L.marker([center.lat, center.lng])
+      .addTo(map)
+      .bindPopup(
+        `Тестовый маркер<br>Широта: ${center.lat.toFixed(
+          4
+        )}<br>Долгота: ${center.lng.toFixed(4)}`
+      );
+    markers.push(marker);
+  });
 }

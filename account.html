@@ -288,6 +288,69 @@
       </a>
     </template>
 
+    <!-- Модальное окно привязки устройства -->
+    <div
+      class="modal fade"
+      id="deviceBindModal"
+      tabindex="-1"
+      aria-labelledby="deviceBindModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="deviceBindModalLabel">
+              Привязка устройства
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body" id="bindModalContent">
+            <!-- Здесь будут рендериться компоненты -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Шаблоны компонентов -->
+    <template id="serialNumberComponent">
+      <div class="bind-component">
+        <p class="mb-3">Введите серийный номер устройства</p>
+        <div class="input-group mb-3">
+          <input
+            type="text"
+            class="form-control"
+            id="serialNumberInput"
+            placeholder="Серийный номер"
+          />
+        </div>
+        <button type="button" class="btn btn-primary w-100" id="bindDeviceBtn">
+          Привязать
+        </button>
+      </div>
+    </template>
+
+    <template id="verificationCodeComponent">
+      <div class="bind-component">
+        <p class="mb-3">Введите код с устройства</p>
+        <div class="input-group mb-3">
+          <input
+            type="text"
+            class="form-control"
+            id="verificationCodeInput"
+            placeholder="Код подтверждения"
+          />
+        </div>
+        <button type="button" class="btn btn-primary w-100" id="submitCodeBtn">
+          Отправить
+        </button>
+      </div>
+    </template>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script type="module" src="js/account.js"></script>

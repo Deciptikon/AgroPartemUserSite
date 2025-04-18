@@ -4,6 +4,8 @@ import { userDataIsActual } from "./auth.js";
 import {
   getDeviceTracks,
   getListDevices,
+  sendBindCode,
+  sendBindDevice,
   sendDeleteDevice,
 } from "./transaction.js";
 
@@ -251,7 +253,7 @@ async function openDeviceModal(device) {
   try {
     // Получаем данные с сервера
     const tracks = await getDeviceTracks(device);
-    console.log(tracks);
+    //console.log(tracks);
 
     const tracksList = document.getElementById("deviceTracksList");
     tracksList.innerHTML = "";
@@ -352,10 +354,6 @@ document.getElementById("deviceForm").addEventListener("submit", (e) => {
     });
 });
 
-function openAddDeviceModal() {
-  console.log("Открыть модалку добавления");
-}
-
 // Функция инициализации карты
 function initMap(track = null) {
   // Проверяем, существует ли уже карта
@@ -367,7 +365,7 @@ function initMap(track = null) {
   if (track) point = [track.lat, track.lng];
 
   // Создаем карту с центром в Москве
-  map = L.map("trackingMap").setView(point, 13);
+  map = L.map("trackingMap").setView(point, 15);
 
   // Добавляем слой OpenStreetMap
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -400,4 +398,95 @@ function addMapControls(track = null) {
       );
     markers.push(marker);
   });
+}
+
+function openAddDeviceModal() {
+  console.log("Открыть модалку добавления");
+  showBindDeviceModal();
+}
+
+// Функция для показа модального окна
+function showBindDeviceModal() {
+  const modal = new bootstrap.Modal(document.getElementById("deviceBindModal"));
+  renderSerialNumberComponent();
+  modal.show();
+}
+
+// Рендер первого компонента (серийный номер)
+function renderSerialNumberComponent() {
+  const content = document.getElementById("bindModalContent");
+  const template = document.getElementById("serialNumberComponent");
+  content.innerHTML = "";
+  content.appendChild(template.content.cloneNode(true));
+
+  // Обработчик кнопки "Привязать"
+  document
+    .getElementById("bindDeviceBtn")
+    .addEventListener("click", async () => {
+      const serialNumber = document
+        .getElementById("serialNumberInput")
+        .value.trim();
+
+      if (!serialNumber) {
+        alert("Пожалуйста, введите серийный номер");
+        return;
+      }
+
+      try {
+        // Отправка серийного номера на сервер
+        const result = await sendBindDevice(serialNumber);
+
+        if (result) {
+          // Если сервер подтвердил, переключаем на компонент с кодом
+          renderVerificationCodeComponent();
+        } else {
+          alert(result.message || "Ошибка при отправке серийного номера");
+        }
+      } catch (error) {
+        console.error("Ошибка:", error);
+        alert("Произошла ошибка при отправке данных");
+      }
+    });
+}
+
+// Рендер второго компонента (код подтверждения)
+function renderVerificationCodeComponent() {
+  const content = document.getElementById("bindModalContent");
+  const template = document.getElementById("verificationCodeComponent");
+  content.innerHTML = "";
+  content.appendChild(template.content.cloneNode(true));
+
+  // Обработчик кнопки "Отправить"
+  document
+    .getElementById("submitCodeBtn")
+    .addEventListener("click", async () => {
+      const verificationCode = document
+        .getElementById("verificationCodeInput")
+        .value.trim();
+
+      if (!verificationCode) {
+        alert("Пожалуйста, введите код подтверждения");
+        return;
+      }
+
+      try {
+        // Отправка кода подтверждения на сервер
+        const result = await sendBindCode(verificationCode);
+
+        if (result) {
+          alert("Устройство успешно привязано!");
+          // Закрываем модальное окно
+          bootstrap.Modal.getInstance(
+            document.getElementById("deviceBindModal")
+          ).hide();
+
+          initTabDevices(); // Обновляем список устройств
+        } else {
+          alert(result.message || "Неверный код подтверждения");
+        }
+      } catch (error) {
+        console.error("Ошибка:", error);
+        alert("Произошла ошибка при отправке кода");
+      }
+    });
 }

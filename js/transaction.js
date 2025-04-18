@@ -2,9 +2,11 @@ import { generateSignature } from "./crypto-utils.js";
 import { dateToStr, getUserData } from "./utils.js";
 import {
   DELETE_DEVICE_URL,
+  BIND_DEVICE_URL,
   GET_LIST_DEVICES_URL,
   GET_LIST_TRACKS_URL,
   LOCAL_USER_DATA,
+  CHECK_BIND_CODE_URL,
 } from "./constants.js";
 import { userDataIsActual } from "./auth.js";
 
@@ -110,4 +112,50 @@ export async function getDeviceTracks(device) {
   }
 
   return arr;
+}
+
+export async function sendBindDevice(serial) {
+  return true;
+  // получение аккаунта из локального хранилища
+  const userData = getUserData(LOCAL_USER_DATA);
+
+  if (userDataIsActual()) {
+    // формируем данные
+    const data = {
+      user_name: userData.user_name,
+      timestamp: dateToStr(new Date()),
+      serial: serial,
+      bind_device: true,
+    };
+
+    // запрос к БД из аккаунта
+    const result = await sendDataToServer(BIND_DEVICE_URL, data, true);
+
+    return result.code === 200 ? true : false;
+  } else {
+    return null;
+  }
+}
+
+export async function sendBindCode(bindCode) {
+  return true;
+  // получение аккаунта из локального хранилища
+  const userData = getUserData(LOCAL_USER_DATA);
+
+  if (userDataIsActual()) {
+    // формируем данные
+    const data = {
+      user_name: userData.user_name,
+      timestamp: dateToStr(new Date()),
+      bind_code: bindCode,
+      check_code: true,
+    };
+
+    // запрос к БД из аккаунта
+    const result = await sendDataToServer(CHECK_BIND_CODE_URL, data, true);
+
+    return result.code === 200 ? true : false;
+  } else {
+    return null;
+  }
 }

@@ -1,7 +1,11 @@
 import { initTheme } from "./theme.js";
 import { initNavbar } from "./navbar.js";
 import { userDataIsActual } from "./auth.js";
-import { getListDevices } from "./transaction.js";
+import {
+  getDeviceTracks,
+  getListDevices,
+  sendDeleteDevice,
+} from "./transaction.js";
 
 // Глобальные переменные
 let currentDeviceId = null;
@@ -85,11 +89,6 @@ async function initTabDevices() {
 
   try {
     // Получаем данные с сервера
-    //const response = await fetch('/api/devices');
-    //const devicesData = await response.json();
-    //const devicesData = [];
-    //throw new Error("Сервер не отвечает!");
-    /**/
     const devicesData = await getListDevices();
 
     // Если данные пусты
@@ -118,8 +117,7 @@ function renderDevices(devicesData) {
     item.querySelector(".device-name").textContent = device.name;
     item.querySelector(".device-serial").textContent = device.serial;
     item.querySelector(".device-item").dataset.deviceId = device.id;
-    item.querySelector(".device-item").onclick = () =>
-      openDeviceModal(device.id);
+    item.querySelector(".device-item").onclick = () => openDeviceModal(device);
     devicesList.appendChild(item);
   });
 
@@ -237,65 +235,52 @@ function openDeviceModal(deviceId) {
     });
 }*/
 
-function openDeviceModal(deviceId) {
-  currentDeviceId = deviceId;
+async function openDeviceModal(device) {
+  document.getElementById("deviceNameInput").value = device.name;
+  document.getElementById("deviceSerialInput").value = device.serial;
+  document.getElementById("deviceLastActiveInput").value = device?.lastActive;
 
-  // Mock данные
-  const mockDevice = {
-    id: deviceId,
-    name: `Устройство ${deviceId}`,
-    serial: `SN-${Math.random().toString(36).substring(2, 10).toUpperCase()}`,
-    lastActive: new Date().toLocaleString(),
-  };
-
-  document.getElementById("deviceNameInput").value = mockDevice.name;
-  document.getElementById("deviceSerialInput").value = mockDevice.serial;
-  document.getElementById("deviceLastActiveInput").value =
-    mockDevice.lastActive;
-
-  // Mock треки
-  const mockTracks = Array(5)
-    .fill()
-    .map((_, i) => ({
-      lat: (55.7558 + Math.random() * 10.1).toFixed(4),
-      lng: (37.6173 + Math.random() * 10.1).toFixed(4),
-      timestamp: new Date(Date.now() - i * 3600000),
-    }));
-
-  const tracksList = document.getElementById("deviceTracksList");
-  tracksList.innerHTML = "";
-  const template = document.getElementById("trackItemTemplate");
-
-  mockTracks.forEach((track) => {
-    const item = template.content.cloneNode(true);
-    const trackElement = item.querySelector("a"); // Получаем ссылку из шаблона
-
-    // Заполняем данные
-    item.querySelector(".track-date").textContent =
-      track.timestamp.toLocaleString();
-    item.querySelector(
-      ".track-coords"
-    ).textContent = `${track.lat}° N, ${track.lng}° E`;
-
-    // Обработчик клика на весь элемент трека
-    trackElement.addEventListener("click", (e) => {
-      e.preventDefault(); // Отменяем стандартное поведение ссылки
-      handleTrackClick(track);
-    });
-
-    tracksList.appendChild(item);
+  const bttDeleteDevice = document.getElementById("deleteDeviceBtn");
+  bttDeleteDevice.addEventListener("click", function () {
+    const isConfirmed = confirm("Вы уверены, что хотите удалить устройство?");
+    if (isConfirmed) {
+      deleteDevice(device);
+    }
   });
 
+  try {
+    // Получаем данные с сервера
+    const tracks = await getDeviceTracks(device);
+    console.log(tracks);
+
+    const tracksList = document.getElementById("deviceTracksList");
+    tracksList.innerHTML = "";
+    const template = document.getElementById("trackItemTemplate");
+
+    tracks.forEach((track) => {
+      const item = template.content.cloneNode(true);
+      const trackElement = item.querySelector("a"); // Получаем ссылку из шаблона
+
+      // Заполняем данные
+      item.querySelector(".track-date").textContent =
+        track.timestamp.toLocaleString();
+      item.querySelector(
+        ".track-coords"
+      ).textContent = `${track.lat}° N, ${track.lng}° E`;
+
+      // Обработчик клика на весь элемент трека
+      trackElement.addEventListener("click", (e) => {
+        e.preventDefault(); // Отменяем стандартное поведение ссылки
+        setTimeout(initMapWithTrack(track), 300);
+      });
+
+      tracksList.appendChild(item);
+    });
+  } catch (error) {
+    //
+  }
+
   deviceModal.show();
-}
-
-function handleTrackClick(track) {
-  const deviceModal = bootstrap.Modal.getInstance(
-    document.getElementById("deviceModal")
-  );
-  //if (deviceModal) deviceModal.hide();
-
-  setTimeout(initMapWithTrack(track), 300);
 }
 
 function switchToGpsTab() {
@@ -327,65 +312,20 @@ function initMapWithTrack(track) {
   deviceModal.hide();
 
   console.log("Открытие карты с треком:", track);
-
-  /*
-  const mapModal = document.getElementById("mapModal");
-  mapModal.addEventListener("shown.bs.modal", () => {
-    if (!mapInitialized) {
-      const map = L.map("map").setView([track.lat, track.lng], 10);
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        maxZoom: 19,
-      }).addTo(map);
-      mapInitialized = true;
-    }
-  });*/
-
-  //const bsModal = new bootstrap.Modal(mapModal, { backdrop: true });
-  //bsModal.show();
-}
-
-// Загрузка треков устройства
-function loadDeviceTracks(deviceId) {
-  const tracksList = document.getElementById("deviceTracksList");
-  tracksList.innerHTML = "";
-
-  // Загрузка данных
-  fetch(`/api/devices/${deviceId}/tracks`)
-    .then((response) => response.json())
-    .then((tracks) => {
-      tracksData = tracks;
-      const template = document.getElementById("trackItemTemplate");
-
-      tracks.forEach((track) => {
-        const item = template.content.cloneNode(true);
-        item.querySelector(".track-date").textContent = new Date(
-          track.timestamp
-        ).toLocaleString();
-        item.querySelector(
-          ".track-coords"
-        ).textContent = `${track.lat}° N, ${track.lng}° E`;
-        tracksList.appendChild(item);
-      });
-    })
-    .catch((error) => {
-      console.error("Ошибка загрузки треков:", error);
-      tracksList.innerHTML =
-        '<div class="text-muted p-3">Не удалось загрузить треки</div>';
-    });
 }
 
 // Удаление устройства
-function deleteDevice(deviceId) {
-  fetch(`/api/devices/${deviceId}`, { method: "DELETE" })
-    .then(() => {
-      deviceModal.hide();
-      initTabDevices(); // Обновляем список устройств
-      alert("Устройство успешно удалено");
-    })
-    .catch((error) => {
-      console.error("Ошибка удаления:", error);
-      alert("Не удалось удалить устройство");
-    });
+async function deleteDevice(device) {
+  console.log("УДАЛЯЕМ");
+  //return null;
+  if (await sendDeleteDevice(device)) {
+    deviceModal.hide();
+    initTabDevices(); // Обновляем список устройств
+    alert("Устройство успешно удалено");
+  } else {
+    console.error("Ошибка удаления:", error);
+    alert("Не удалось удалить устройство");
+  }
 }
 
 // Сохранение изменений

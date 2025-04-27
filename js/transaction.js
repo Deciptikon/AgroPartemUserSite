@@ -146,7 +146,7 @@ export async function sendBindDevice(serial) {
   //return true;
   // получение аккаунта из локального хранилища
   const userData = getUserData(LOCAL_USER_DATA);
-  print(userData);
+  console.log(userData);
 
   if (userDataIsActual()) {
     // формируем данные

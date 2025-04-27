@@ -228,39 +228,6 @@ function renderErrorState(error) {
   devicesTab.appendChild(errorContainer);
 }
 
-/*
-function openDeviceModal(deviceId) {
-  currentDeviceId = deviceId;
-  modal.show(); /////////////////////////////////
-  // Загрузка данных устройства
-  fetch(`/api/devices/${deviceId}`)
-    .then((response) => response.json())
-    .then((device) => {
-      // Заполняем форму
-      document.getElementById("deviceNameInput").value = device.name;
-      document.getElementById("deviceSerialInput").value = device.serial;
-      document.getElementById("deviceLastActiveInput").value =
-        device.lastActive || "Неизвестно";
-
-      // Загружаем треки
-      loadDeviceTracks(deviceId);
-
-      // Настройка кнопки удаления
-      document.getElementById("deleteDeviceBtn").onclick = () => {
-        if (confirm("Вы уверены, что хотите удалить это устройство?")) {
-          deleteDevice(deviceId);
-        }
-      };
-
-      // Показываем модальное окно
-      modal.show();
-    })
-    .catch((error) => {
-      console.error("Ошибка загрузки устройства:", error);
-      alert("Не удалось загрузить данные устройства");
-    });
-}*/
-
 async function openDeviceModal(device) {
   globalDevice = device;
   document.getElementById("deviceNameInput").value = device.name;
@@ -273,6 +240,31 @@ async function openDeviceModal(device) {
     if (isConfirmed) {
       deleteDevice(device);
     }
+  });
+
+  // Сохранение изменений
+  const bttSaveDevice = document.getElementById("saveDeviceBtn");
+  bttSaveDevice.addEventListener("click", (e) => {
+    e.preventDefault();
+
+    const updatedData = {
+      name: document.getElementById("deviceNameInput").value,
+      // Другие редактируемые поля при необходимости
+    };
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+    fetch(`/api/devices/${currentDeviceId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(updatedData),
+    })
+      .then(() => {
+        deviceModal.hide();
+        initTabDevices(); // Обновляем список устройств
+      })
+      .catch((error) => {
+        console.error("Ошибка сохранения:", error);
+        alert("Не удалось сохранить изменения");
+      });
   });
 
   try {
@@ -392,30 +384,6 @@ async function deleteDevice(device) {
   }
 }
 
-// Сохранение изменений
-document.getElementById("deviceForm").addEventListener("submit", (e) => {
-  e.preventDefault();
-
-  const updatedData = {
-    name: document.getElementById("deviceNameInput").value,
-    // Другие редактируемые поля при необходимости
-  };
-
-  fetch(`/api/devices/${currentDeviceId}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(updatedData),
-  })
-    .then(() => {
-      deviceModal.hide();
-      initTabDevices(); // Обновляем список устройств
-    })
-    .catch((error) => {
-      console.error("Ошибка сохранения:", error);
-      alert("Не удалось сохранить изменения");
-    });
-});
-
 // Функция инициализации карты
 function initMap(track = null) {
   // Проверяем, существует ли уже карта
@@ -493,7 +461,11 @@ function renderSerialNumberComponent() {
   // Обработчик кнопки "Привязать"
   document
     .getElementById("bindDeviceBtn")
-    .addEventListener("click", async () => {
+    .addEventListener("click", async (e) => {
+      e.preventDefault();
+      e.stopPropagation(); // Добавляем остановку всплытия
+
+      console.log("Кнопка нажата"); // Для отладки
       serialNumber = document.getElementById("serialNumberInput").value.trim();
 
       if (!serialNumber) {
@@ -504,12 +476,11 @@ function renderSerialNumberComponent() {
       try {
         // Отправка серийного номера на сервер
         const result = await sendBindDevice(serialNumber);
-
         if (result) {
           // Если сервер подтвердил, переключаем на компонент с кодом
           renderVerificationCodeComponent();
         } else {
-          alert(result.message || "Ошибка при отправке серийного номера");
+          alert("Ошибка при отправке серийного номера");
         }
       } catch (error) {
         console.error("Ошибка:", error);
@@ -528,7 +499,8 @@ function renderVerificationCodeComponent() {
   // Обработчик кнопки "Отправить"
   document
     .getElementById("submitCodeBtn")
-    .addEventListener("click", async () => {
+    .addEventListener("click", async (e) => {
+      e.preventDefault();
       const verificationCode = document
         .getElementById("verificationCodeInput")
         .value.trim();

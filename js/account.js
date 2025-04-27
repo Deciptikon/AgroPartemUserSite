@@ -4,16 +4,32 @@ import { userDataIsActual } from "./auth.js";
 import {
   getDeviceTracks,
   getListDevices,
+  getTrack,
   sendBindCode,
   sendBindDevice,
   sendDeleteDevice,
 } from "./transaction.js";
+import { dateToStr, getUserData, strToDate } from "./utils.js";
+import { LOCAL_USER_DATA, PERIOD_GPS_UPDATE } from "./constants.js";
 
 // Глобальные переменные
+const globalUser = getUserData(LOCAL_USER_DATA);
+
+//линия трека на карте
+let trackLine = null;
+let lenTrack = 0;
+let startMarker = null;
+let endMarker = null;
+
 let currentDeviceId = null;
 let deviceModal = null;
+let intervalId = null;
 
-let tracksData = []; // Здесь будут храниться треки устройства
+let serialNumber = null;
+
+let globalTrack = null;
+let globalDevice = null;
+
 let mapInitialized = false;
 let map; // Глобальная переменная для хранения карты
 let markers = []; // Массив для маркеров
@@ -33,11 +49,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const deviceModalTemplate = document.getElementById("deviceModalTemplate");
   document.body.appendChild(deviceModalTemplate.content.cloneNode(true));
   deviceModal = new bootstrap.Modal("#deviceModal");
-
-  // Модальное окно просмотра треков
-  //const mapModalTemplate = document.getElementById("mapModalTemplate");
-  //document.body.appendChild(mapModalTemplate.content.cloneNode(true));
-  //mapModal =
 
   const logoutButton = document.getElementById("logoutButton");
   logoutButton.addEventListener("click", () => {
@@ -68,6 +79,8 @@ document.addEventListener("DOMContentLoaded", () => {
       // Показываем соответствующую вкладку
       const tabId = button.getAttribute("data-tab");
       document.getElementById(tabId).classList.add("active");
+
+      if (tabId !== "gps") stopInterval();
 
       if (tabId === "devices") initTabDevices();
       if (tabId === "gps") initMap();
@@ -107,6 +120,7 @@ async function initTabDevices() {
 
 // Вынесем рендеринг в отдельную функцию
 function renderDevices(devicesData) {
+  console.log(devicesData);
   const devicesTab = document.getElementById("devices");
   const template = document.getElementById("devicesTemplate");
   const itemTemplate = document.getElementById("deviceItemTemplate");
@@ -114,14 +128,24 @@ function renderDevices(devicesData) {
   const content = template.content.cloneNode(true);
   const devicesList = content.querySelector(".devices-list");
 
-  devicesData.forEach((device) => {
+  let id = 0;
+  for (let serial_key in devicesData) {
+    const data = devicesData[serial_key];
+
+    const device = {
+      name: data.name,
+      serial: serial_key,
+      id: id,
+    };
+    id++;
+
     const item = itemTemplate.content.cloneNode(true);
     item.querySelector(".device-name").textContent = device.name;
     item.querySelector(".device-serial").textContent = device.serial;
     item.querySelector(".device-item").dataset.deviceId = device.id;
     item.querySelector(".device-item").onclick = () => openDeviceModal(device);
     devicesList.appendChild(item);
-  });
+  }
 
   // Кнопка добавления
   const addBtn = document.createElement("div");
@@ -238,6 +262,7 @@ function openDeviceModal(deviceId) {
 }*/
 
 async function openDeviceModal(device) {
+  globalDevice = device;
   document.getElementById("deviceNameInput").value = device.name;
   document.getElementById("deviceSerialInput").value = device.serial;
   document.getElementById("deviceLastActiveInput").value = device?.lastActive;
@@ -259,16 +284,28 @@ async function openDeviceModal(device) {
     tracksList.innerHTML = "";
     const template = document.getElementById("trackItemTemplate");
 
-    tracks.forEach((track) => {
+    for (let track_key in tracks) {
+      const track_data = tracks[track_key];
+      const track = {
+        track_key: track_key,
+        track_lat: track_data.track_lat,
+        track_lon: track_data.track_lon,
+        timestamp: track_data.timestamp,
+      };
+
       const item = template.content.cloneNode(true);
       const trackElement = item.querySelector("a"); // Получаем ссылку из шаблона
 
       // Заполняем данные
-      item.querySelector(".track-date").textContent =
-        track.timestamp.toLocaleString();
+      item.querySelector(".track-date").textContent = strToDate(
+        track.timestamp
+      ).toLocaleString();
       item.querySelector(
         ".track-coords"
-      ).textContent = `${track.lat}° N, ${track.lng}° E`;
+      ).textContent = `${track.track_lat}° N, ${track.track_lon}° E`;
+      document.getElementById("deviceLastActiveInput").value = strToDate(
+        track.timestamp
+      ).toLocaleString();
 
       // Обработчик клика на весь элемент трека
       trackElement.addEventListener("click", (e) => {
@@ -277,7 +314,7 @@ async function openDeviceModal(device) {
       });
 
       tracksList.appendChild(item);
-    });
+    }
   } catch (error) {
     //
   }
@@ -309,9 +346,34 @@ function switchToGpsTab() {
 }
 
 function initMapWithTrack(track) {
+  globalTrack = track;
   switchToGpsTab();
   initMap(track);
   deviceModal.hide();
+  setTimeout(async function () {
+    stopInterval();
+    if (startMarker) {
+      map.removeLayer(startMarker);
+      startMarker = null;
+    }
+    if (endMarker) {
+      map.removeLayer(endMarker);
+      endMarker = null;
+    }
+
+    try {
+      updateMap();
+    } catch (e) {
+      console.error(e);
+    }
+    startInterval(async function () {
+      try {
+        updateMap();
+      } catch (e) {
+        console.error(e);
+      }
+    }, PERIOD_GPS_UPDATE);
+  }, 300);
 
   console.log("Открытие карты с треком:", track);
 }
@@ -362,10 +424,19 @@ function initMap(track = null) {
   }
 
   let point = [55.751244, 37.618423];
-  if (track) point = [track.lat, track.lng];
+  if (track) point = [track.track_lat, track.track_lon];
 
   // Создаем карту с центром в Москве
   map = L.map("trackingMap").setView(point, 15);
+
+  if (startMarker) {
+    map.removeLayer(startMarker);
+    startMarker = null;
+  }
+  if (endMarker) {
+    map.removeLayer(endMarker);
+    endMarker = null;
+  }
 
   // Добавляем слой OpenStreetMap
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -379,7 +450,7 @@ function initMap(track = null) {
 // Добавляем элементы управления
 function addMapControls(track = null) {
   let point = [55.751244, 37.618423];
-  if (track) point = [track.lat, track.lng];
+  if (track) point = [track.track_lat, track.track_lon];
 
   // Кнопка центрирования
   document.getElementById("centerMapBtn").addEventListener("click", () => {
@@ -423,9 +494,7 @@ function renderSerialNumberComponent() {
   document
     .getElementById("bindDeviceBtn")
     .addEventListener("click", async () => {
-      const serialNumber = document
-        .getElementById("serialNumberInput")
-        .value.trim();
+      serialNumber = document.getElementById("serialNumberInput").value.trim();
 
       if (!serialNumber) {
         alert("Пожалуйста, введите серийный номер");
@@ -471,7 +540,7 @@ function renderVerificationCodeComponent() {
 
       try {
         // Отправка кода подтверждения на сервер
-        const result = await sendBindCode(verificationCode);
+        const result = await sendBindCode(serialNumber, verificationCode);
 
         if (result) {
           alert("Устройство успешно привязано!");
@@ -489,4 +558,95 @@ function renderVerificationCodeComponent() {
         alert("Произошла ошибка при отправке кода");
       }
     });
+}
+
+async function updateMap() {
+  console.log("Обновляем состояние карты");
+  const data = {
+    user_name: globalUser.user_name,
+    serial_key: globalDevice.serial,
+    track_key: globalTrack.track_key,
+    timestamp: dateToStr(new Date()),
+    get_track_data: true,
+  };
+
+  const track = await getTrack(data);
+  console.log(track);
+
+  let point = [];
+  let trackPoints = [];
+  for (let time in track) {
+    const p = track[time];
+    point = [p.track_lat, p.track_lon];
+    trackPoints.push(point);
+  }
+
+  if (!trackLine) {
+    trackLine = L.polyline(trackPoints, { color: "blue", weight: 5 }).addTo(
+      map
+    );
+  } else {
+    // Обновляем существующую линию
+    trackLine.setLatLngs(trackPoints);
+  }
+
+  updateMarkers(trackPoints);
+
+  // Автоматически подгоняем карту под трек
+  map.fitBounds(trackLine.getBounds());
+}
+
+function updateMarkers(trackPoints) {
+  /*// Удаляем старые маркеры (если есть)
+  if (startMarker) {
+    map.removeLayer(startMarker);
+    startMarker = null;
+  }
+  if (endMarker) {
+    map.removeLayer(endMarker);
+    endMarker = null;
+  }*/
+
+  // Добавляем новые
+  if (trackPoints && trackPoints.length === 0) {
+    if (startMarker) {
+      map.removeLayer(startMarker);
+      startMarker = null;
+    }
+    if (endMarker) {
+      map.removeLayer(endMarker);
+      endMarker = null;
+    }
+  }
+  if (trackPoints.length === lenTrack) return;
+
+  lenTrack = trackPoints.length;
+  if (trackPoints.length === 1) {
+    if (startMarker) map.removeLayer(startMarker);
+    startMarker = L.marker(trackPoints[0]).addTo(map).bindPopup("Start");
+  }
+  if (trackPoints.length > 1) {
+    if (!startMarker)
+      startMarker = L.marker(trackPoints[0]).addTo(map).bindPopup("Start");
+
+    if (endMarker) map.removeLayer(endMarker);
+    endMarker = L.marker(trackPoints[trackPoints.length - 1])
+      .addTo(map)
+      .bindPopup("End");
+  }
+}
+
+// Запуск интервальных вызовов
+function startInterval(func, period) {
+  if (!intervalId) {
+    intervalId = setInterval(func, period);
+  }
+}
+
+// Остановка интервальных вызовов
+function stopInterval() {
+  if (intervalId) {
+    clearInterval(intervalId);
+    intervalId = null;
+  }
 }

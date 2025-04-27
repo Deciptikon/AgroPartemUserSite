@@ -1,4 +1,4 @@
-import { sendDataToServer } from "./transaction.js";
+import { sendAuth } from "./transaction.js";
 import { AUTH_URL, LOCAL_USER_DATA, MAX_TIME_FOR_TOKEN } from "./constants.js";
 import { dateToStr, diffStrDates, getUserData } from "./utils.js";
 
@@ -64,14 +64,11 @@ export function initAuth() {
     const password = document.getElementById("password").value;
 
     try {
-      const response = await sendDataToServer(AUTH_URL, {
-        user_name: username,
-        user_pass: password,
-      });
+      const response = await sendAuth(username, password);
 
       console.log(response);
 
-      if (response && response?.data && "token" in response?.data) {
+      if (response && response?.data && "secret_key" in response?.data) {
         let userData = response.data;
         userData.timestamp = dateToStr(new Date());
         localStorage.setItem(LOCAL_USER_DATA, JSON.stringify(userData));
